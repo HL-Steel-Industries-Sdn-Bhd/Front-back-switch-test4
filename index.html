@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Card Stack Swipe</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px;
+    background: #f5f5f5;
+  }
+
+  .container {
+    position: relative;
+    width: 320px;
+    height: 170px;
+    touch-action: pan-y;
+  }
+
+  .box {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      transform 0.45s ease,
+      opacity 0.45s ease,
+      box-shadow 0.45s ease;
+  }
+
+  /* 固定颜色 */
+  .c1 { background: #FFEB3B; } /* 黄 */
+  .c2 { background: #FF9800; } /* 橙 */
+  .c3 { background: #4CAF50; } /* 绿 */
+  .c4 { background: #03A9F4; } /* 蓝 */
+
+  iframe {
+    width: 320px;
+    height: 170px;
+    margin-top: 20px;
+    border-radius: 10px;
+    border: 2px solid #333;
+    background: #fff;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container" id="stack">
+  <div class="box c1">Hurray</div>
+  <div class="box c2">Hello</div>
+  <div class="box c3">Welcome</div>
+  <div class="box c4">Cheers</div>
+</div>
+
+<iframe id="frame"></iframe>
+
+<script>
+  const boxes = document.querySelectorAll('.box');
+  const iframe = document.getElementById('frame');
+  const contents = [
+    '<h1>Hurray</h1>',
+    '<h1>Hello</h1>',
+    '<h1>Welcome</h1>',
+    '<h1>Cheers</h1>'
+  ];
+
+  let current = 0;
+
+  function render() {
+    boxes.forEach((box, i) => {
+      const offset = (i - current + boxes.length) % boxes.length;
+
+      if (offset === 0) {
+        box.style.transform = 'translate(0,0) scale(1)';
+        box.style.opacity = '1';
+        box.style.zIndex = 10;
+        box.style.boxShadow = '0 18px 40px rgba(0,0,0,0.25)';
+      } else {
+        box.style.transform =
+          `translate(${offset * 18}px, ${-offset * 12}px) scale(${1 - offset * 0.04})`;
+        box.style.opacity = '0.85';
+        box.style.zIndex = 10 - offset;
+        box.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+      }
+    });
+
+    iframe.srcdoc = contents[current];
+  }
+
+  function next() {
+    current = (current + 1) % boxes.length;
+    render();
+  }
+
+  // 点击切换
+  boxes.forEach(box => {
+    box.addEventListener('click', next);
+  });
+
+  // Swipe 支持
+  let startX = 0;
+
+  const stack = document.getElementById('stack');
+
+  stack.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+  });
+
+  stack.addEventListener('touchend', e => {
+    const endX = e.changedTouches[0].clientX;
+    if (Math.abs(endX - startX) > 40) {
+      next();
+    }
+  });
+
+  render();
+</script>
+
+</body>
+</html>
